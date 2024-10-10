@@ -27,15 +27,20 @@ headers = {
 try:
     response = requests.get(api_url, headers=headers)
     response.raise_for_status()
-    data = response.json()
-    
-    # Convert data to DataFrame
-    if isinstance(data, list):
-        df = pd.DataFrame(data)
+    if response.content:
+        data = response.json()
+        
+        # Convert data to DataFrame
+        if isinstance(data, list):
+            df = pd.DataFrame(data)
+        else:
+            df = pd.DataFrame([data])
+        
+        # Display DataFrame as a table in Streamlit
+        st.dataframe(df)
     else:
-        df = pd.DataFrame([data])
-    
-    # Display DataFrame as a table in Streamlit
-    st.dataframe(df)
+        st.warning("No data available from the API.")
 except requests.exceptions.RequestException as e:
     st.error(f"Error fetching data: {e}")
+except json.JSONDecodeError as e:
+    st.error(f"Error decoding JSON response: {e}")
